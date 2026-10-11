@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageEnv. All rights reserved.
+ * Licensed under the Open Software License 3.0 (OSL-3.0). See LICENSE.txt.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!--
+            Same slot as Luma - "checkout.cart.form.before", above the item list,
+            with-items only. The Hyva cart page is server-rendered, so this block
+            server-renders its initial state from the shared ViewModel and then
+            follows the Hyva private-content flow.
+
+            Loaded through the "hyva_" handle, which Hyva_Theme adds only when
+            the current store view uses a Hyva theme, so Luma store views in the
+            same installation never render this block. The block name still
+            differs from the base module's "mageenv.dcp.cart.progress" so the
+            two can never override each other.
+        -->
+        <referenceContainer name="checkout.cart.form.before">
+            <block name="mageenv.dcp.cart.progress.hyva"
+                   template="MageEnv_DynamicCartProgressHyva::cart/progress.phtml"
+                   before="-">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">MageEnv\DynamicCartProgress\ViewModel\CartProgress</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

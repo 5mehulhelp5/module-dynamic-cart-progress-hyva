@@ -1,0 +1,140 @@
+<?php
+/**
+ * Copyright © MageEnv. All rights reserved.
+ * Licensed under the Open Software License 3.0 (OSL-3.0). See LICENSE.txt.
+ */
+
+declare(strict_types=1);
+
+use MageEnv\DynamicCartProgress\ViewModel\CartProgress;
+
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$viewModel = $block->getData('view_model');
+if (!$viewModel instanceof CartProgress) {
+    return;
+}
+
+// Server-rendered initial state - kept fresh afterwards from the customer-data section.
+$payloadJson = $viewModel->getJsonPayload();
+
+$labels = [
+    'region' => (string)__('Cart rewards'),
+    'next' => (string)__('Next reward'),
+    'rewards' => (string)__('Rewards'),
+    'secured' => (string)__('%1 secured'),
+    'code' => (string)__('Code'),
+    'copied' => (string)__('Copied'),
+    'copyCode' => (string)__('Copy code %1'),
+    'away' => (string)__('Just %1 away'),
+    'done' => (string)__('Every reward secured'),
+    'then' => (string)__('then %1'),
+    'reach' => (string)__('Reach %1'),
+    'reachedAt' => (string)__('Unlocked at %1'),
+    'milestoneSecured' => (string)__('Secured'),
+    'milestoneMore' => (string)__('%1 more'),
+    'ariaSecured' => (string)__('%1: secured, reached at %2'),
+    'ariaUpcoming' => (string)__('%1: reach %2, %3 more'),
+];
+?>
+<?php // CSP-safe: the mageenvDcpMinicart Alpine factory is served as an external script, never inline. ?>
+<script src="<?= $escaper->escapeUrl(
+    $block->getViewFileUrl('MageEnv_DynamicCartProgressHyva::js/minicart-progress.js')
+) ?>"></script>
+<div
+    x-data="mageenvDcpMinicart(
+        <?= $escaper->escapeHtmlAttr($payloadJson) ?>,
+        <?= $escaper->escapeHtmlAttr(json_encode($labels)) ?>,
+        '<?= $escaper->escapeJs($viewModel->getSectionName()) ?>'
+    )"
+    x-show="visible()"
+    x-cloak
+    class="mageenv-dcp-minicart"
+    :class="{ 'is-complete': allEarned() }"
+    role="group"
+    :aria-label="labels.region"
+>
+    <span class="mageenv-dcp-minicart__sr" role="status" aria-atomic="true" x-text="statusMessage()"></span>
+
+    <div class="mageenv-dcp-minicart__card">
+        <div class="mageenv-dcp-minicart__top">
+            <p class="mageenv-dcp-minicart__kicker" x-text="kickerLabel()"></p>
+            <template x-if="rewardCode()">
+                <button type="button" class="mageenv-dcp-minicart__code" @click="copyCode()" :aria-label="codeAria()">
+                    <span class="mageenv-dcp-minicart__code-label" aria-hidden="true" x-text="codeBadgeLabel()"></span>
+                    <span class="mageenv-dcp-minicart__code-value" aria-hidden="true" x-text="codeValue()"></span>
+                </button>
+            </template>
+            <template x-if="!rewardCode() && securedNote()">
+                <span class="mageenv-dcp-minicart__badge" x-text="securedNote()"></span>
+            </template>
+        </div>
+
+        <div class="mageenv-dcp-minicart__mid">
+            <strong class="mageenv-dcp-minicart__offer" x-text="offerLabel()" :title="offerLabel()"></strong>
+            <span class="mageenv-dcp-minicart__gap">
+                <span class="mageenv-dcp-minicart__gap-n" x-text="distanceLabel()"></span>
+                <span class="mageenv-dcp-minicart__then" x-show="thenLabel()" x-text="thenLabel()"></span>
+            </span>
+        </div>
+
+        <div class="mageenv-dcp-minicart__meter"
+             :class="styleClass()"
+             :style="{ '--dcp-fill': fillValue(), '--dcp-count': milestones().length }">
+            <template x-if="styleKey() === 'step'">
+                <ol class="mageenv-dcp-minicart__steps">
+                    <template x-for="(milestone, index) in milestones()" :key="index">
+                        <li class="mageenv-dcp-minicart__step" :class="stepClass(milestone, index)">
+                            <button type="button" class="mageenv-dcp-minicart__ms"
+                                    :class="msClass(milestone, index)"
+                                    :aria-label="milestoneAria(milestone)">
+                                <span aria-hidden="true" x-text="stepMark(milestone, index)"></span>
+                                <span class="mageenv-dcp-minicart__tip" aria-hidden="true">
+                                    <span class="mageenv-dcp-minicart__tip-reward"
+                                          x-text="milestone.rewardLabel"></span>
+                                    <span class="mageenv-dcp-minicart__tip-reach"
+                                          x-text="milestoneReach(milestone)"></span>
+                                    <span class="mageenv-dcp-minicart__tip-status"
+                                          :class="{ 'mageenv-dcp-minicart__tip-status--secured': milestone.achieved }"
+                                          x-text="milestoneStatus(milestone)"></span>
+                                </span>
+                            </button>
+                        </li>
+                    </template>
+                </ol>
+            </template>
+
+            <template x-if="styleKey() !== 'step'">
+                <span class="mageenv-dcp-minicart__track">
+                    <span class="mageenv-dcp-minicart__fill" aria-hidden="true"></span>
+                    <template x-if="styleKey() !== 'fill'">
+                        <span class="mageenv-dcp-minicart__contents">
+                            <template x-for="(milestone, index) in milestones()" :key="index">
+                                <button type="button" class="mageenv-dcp-minicart__ms"
+                                        :style="{ '--dcp-pos': (milestone.positionPercent) }"
+                                        :class="msClass(milestone, index)"
+                                        :aria-label="milestoneAria(milestone)">
+                                    <span class="mageenv-dcp-minicart__tip" aria-hidden="true">
+                                        <span class="mageenv-dcp-minicart__tip-reward"
+                                              x-text="milestone.rewardLabel"></span>
+                                        <span class="mageenv-dcp-minicart__tip-reach"
+                                              x-text="milestoneReach(milestone)"></span>
+                                        <span class="mageenv-dcp-minicart__tip-status"
+                                              :class="{
+                                                  'mageenv-dcp-minicart__tip-status--secured': milestone.achieved
+                                              }"
+                                              x-text="milestoneStatus(milestone)"></span>
+                                    </span>
+                                </button>
+                            </template>
+                        </span>
+                    </template>
+                    <template x-if="styleKey() === 'linear'">
+                        <span class="mageenv-dcp-minicart__you" aria-hidden="true"></span>
+                    </template>
+                </span>
+            </template>
+        </div>
+    </div>
+</div>

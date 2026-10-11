@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © MageEnv. All rights reserved.
+ * Licensed under the Open Software License 3.0 (OSL-3.0). See LICENSE.txt.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <!--
+            The reward-journey stylesheet. Loaded site-wide (the mini cart lives
+            in the header on every page) as a plain external CSS file - CSP-safe
+            under style-src 'self', no inline <style> in the templates. It also
+            carries the [x-cloak] guard so the component stays hidden until Alpine
+            hydrates. The "hyva_" handle keeps all of this off Luma store views.
+        -->
+        <css src="MageEnv_DynamicCartProgressHyva::css/mageenv-dcp.css"/>
+    </head>
+    <body>
+        <!--
+            The Hyva mini cart is the "cart-drawer" block (Magento_Theme layout of
+            the Hyva default theme). It renders its item list client-side from the
+            "cart" customer-data section and exposes named child containers for
+            extensions. This block goes into "cart-drawer.items.before": directly
+            under the drawer heading, above the item list. That container is always
+            in the DOM (unlike "cart-drawer.totals.before", which sits inside an
+            Alpine x-if template that only exists while the cart has items), so the
+            island initialises with the page and receives Hyva's
+            "private-content-loaded" event like the Cart Page island does.
+            The island server-renders its initial state from the shared ViewModel
+            and hides itself (x-show) whenever the payload is not displayable.
+            On a customised Hyva theme without this container, add
+                <?= $block->getChildHtml('mageenv.dcp.minicart.progress') ?>
+            to the theme's cart drawer template above the item list.
+        -->
+        <referenceContainer name="cart-drawer.items.before">
+            <block name="mageenv.dcp.minicart.progress"
+                   template="MageEnv_DynamicCartProgressHyva::minicart/progress.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">MageEnv\DynamicCartProgress\ViewModel\CartProgress</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

@@ -1,0 +1,34 @@
+{
+    "name": "mageenv/module-dynamic-cart-progress-hyva",
+    "description": "Hyva storefront integration for MageEnv Dynamic Cart Progress - Alpine.js Mini Cart and Cart Page components consuming the shared progress payload. No business logic.",
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0"
+    ],
+    "homepage": "https://mageenv.com/extensions/dynamic-cart-progress/",
+    "support": {
+        "issues": "https://github.com/mageenvm2/module-dynamic-cart-progress-hyva/issues",
+        "source": "https://github.com/mageenvm2/module-dynamic-cart-progress-hyva",
+        "email": "info@mageenv.com"
+    },
+    "require": {
+        "php": "~8.3.0||~8.4.0||~8.5.0",
+        "mageenv/module-dynamic-cart-progress": "^1.0.0",
+        "hyva-themes/magento2-theme-module": ">=1.1.0 <2"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "MageEnv\\DynamicCartProgressHyva\\": ""
+        }
+    },
+    "archive": {
+        "exclude": [
+            "/Test",
+            "/phpcs.xml.dist",
+            "/.gitignore"
+        ]
+    }
+}

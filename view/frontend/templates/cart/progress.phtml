@@ -1,0 +1,153 @@
+<?php
+/**
+ * Copyright © MageEnv. All rights reserved.
+ * Licensed under the Open Software License 3.0 (OSL-3.0). See LICENSE.txt.
+ */
+
+declare(strict_types=1);
+
+use MageEnv\DynamicCartProgress\ViewModel\CartProgress;
+
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$viewModel = $block->getData('view_model');
+if (!$viewModel instanceof CartProgress) {
+    return;
+}
+
+// Server-rendered initial state; kept fresh afterwards from the customer-data section.
+$payloadJson = $viewModel->getJsonPayload();
+
+$labels = [
+    'region' => (string)__('Cart rewards'),
+    'addMore' => (string)__('Add %1 more to unlock %2'),
+    'topUnlocked' => (string)__('%1 unlocked, the top reward on this order'),
+    'unlocked' => (string)__('%1 unlocked'),
+    'codeFor' => (string)__('Code for %1:'),
+    'copy' => (string)__('Copy'),
+    'copied' => (string)__('Copied'),
+    'at' => (string)__('%1 at %2'),
+    'tiers' => (string)__('Reward tiers'),
+    'earlier' => (string)__('+ %1 earlier'),
+    'more' => (string)__('+ %1 more'),
+    'secured' => (string)__('Secured'),
+    'next' => (string)__('Next reward'),
+    'upcoming' => (string)__('Upcoming'),
+];
+?>
+<?php // CSP-safe: the mageenvDcpCart Alpine factory is served as an external script, never inline. ?>
+<script src="<?= $escaper->escapeUrl(
+    $block->getViewFileUrl('MageEnv_DynamicCartProgressHyva::js/cart-progress.js')
+) ?>"></script>
+<div
+    x-data="mageenvDcpCart(
+        <?= $escaper->escapeHtmlAttr($payloadJson) ?>,
+        <?= $escaper->escapeHtmlAttr(json_encode($labels)) ?>,
+        '<?= $escaper->escapeJs($viewModel->getSectionName()) ?>'
+    )"
+    x-show="visible()"
+    x-cloak
+    class="mageenv-dcp-cart"
+    :class="{ 'is-complete': allEarned() }"
+    role="group"
+    :aria-label="labels.region"
+>
+    <span class="mageenv-dcp-cart__sr" role="status" aria-atomic="true" x-text="statusMessage()"></span>
+
+    <div class="mageenv-dcp-cart__head">
+        <p class="mageenv-dcp-cart__msg">
+            <template x-for="(part, index) in messageParts()" :key="index">
+                <span :class="part.cls" x-text="part.text"></span>
+            </template>
+        </p>
+        <p class="mageenv-dcp-cart__note" x-show="unlockedNote()" x-text="unlockedNote()"></p>
+    </div>
+
+    <template x-if="rewardCode()">
+        <p class="mageenv-dcp-cart__code">
+            <span class="mageenv-dcp-cart__code-label" x-text="codeLabel()"></span>
+            <code class="mageenv-dcp-cart__code-value" x-text="codeValue()"></code>
+            <button type="button" class="mageenv-dcp-cart__copy" aria-live="polite"
+                    @click="copyCode()" x-text="copyLabel()"></button>
+        </p>
+    </template>
+
+    <template x-if="styleKey() === 'step'">
+        <ol class="mageenv-dcp-cart__steps"
+            :class="stepsClass()"
+            :style="{ '--dcp-count': milestones().length }"
+            :aria-label="labels.tiers">
+            <template x-for="(milestone, index) in milestones()" :key="index">
+                <li class="mageenv-dcp-cart__step"
+                    :class="stepClass(milestone, index)"
+                    :aria-current="index === nextIndex() ? 'step' : false">
+                    <span class="mageenv-dcp-cart__step-dot" aria-hidden="true"
+                          x-text="stepMark(milestone, index)"></span>
+                    <span class="mageenv-dcp-cart__step-text">
+                        <span class="mageenv-dcp-cart__step-reward" x-text="milestone.rewardLabel"></span>
+                        <span class="mageenv-dcp-cart__step-at" x-text="milestone.formattedTargetAmount"></span>
+                        <span class="mageenv-dcp-cart__sr" x-text="tierState(milestone, index)"></span>
+                    </span>
+                </li>
+            </template>
+        </ol>
+    </template>
+
+    <template x-if="styleKey() !== 'step'">
+        <div class="mageenv-dcp-cart__contents">
+            <div class="mageenv-dcp-cart__meter" aria-hidden="true"
+                 :class="styleClass()"
+                 :style="{ '--dcp-fill': fillValue() }">
+                <span class="mageenv-dcp-cart__track">
+                    <span class="mageenv-dcp-cart__fill"></span>
+                    <template x-if="styleKey() !== 'fill'">
+                        <span class="mageenv-dcp-cart__contents">
+                            <template x-for="(milestone, index) in milestones()" :key="index">
+                                <span class="mageenv-dcp-cart__mark"
+                                      :class="markClass(milestone, index)"
+                                      :style="{ '--dcp-pos': (milestone.positionPercent) }"></span>
+                            </template>
+                        </span>
+                    </template>
+                    <template x-if="styleKey() === 'linear'">
+                        <span class="mageenv-dcp-cart__you" x-text="youLabel()"></span>
+                    </template>
+                </span>
+            </div>
+
+            <template x-if="styleKey() === 'fill' && !allEarned()">
+                <p class="mageenv-dcp-cart__ends">
+                    <span class="mageenv-dcp-cart__ends-from" x-text="fillFromLabel()"></span>
+                    <span class="mageenv-dcp-cart__ends-to">
+                        <template x-for="(part, index) in fillToParts()" :key="index">
+                            <span :class="part.cls" x-text="part.text"></span>
+                        </template>
+                    </span>
+                </p>
+            </template>
+
+            <template x-if="styleKey() !== 'fill'">
+                <ol class="mageenv-dcp-cart__legend" :aria-label="labels.tiers">
+                    <template x-for="row in legend()" :key="row.key">
+                        <li class="mageenv-dcp-cart__legend-item" :class="legendClass(row)">
+                            <template x-if="row.more">
+                                <span x-text="row.text"></span>
+                            </template>
+                            <template x-if="!row.more">
+                                <span class="mageenv-dcp-cart__contents">
+                                    <span class="mageenv-dcp-cart__legend-reward"
+                                          x-text="row.milestone.rewardLabel"></span>
+                                    <span class="mageenv-dcp-cart__legend-at"
+                                          x-text="row.milestone.formattedTargetAmount"></span>
+                                    <span class="mageenv-dcp-cart__sr"
+                                          x-text="tierState(row.milestone, row.index)"></span>
+                                </span>
+                            </template>
+                        </li>
+                    </template>
+                </ol>
+            </template>
+        </div>
+    </template>
+</div>

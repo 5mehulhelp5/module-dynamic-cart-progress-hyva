@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<ruleset name="MageEnv_DynamicCartProgressHyva">
+    <description>Magento 2 coding standard for the MageEnv_DynamicCartProgressHyva module.</description>
+
+    <file>.</file>
+
+    <arg name="extensions" value="php,phtml,xml,js,less,html,graphql"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+
+    <exclude-pattern>*/Test/Unit/phpunit.xml.dist</exclude-pattern>
+    <exclude-pattern>*/.phpunit.cache/*</exclude-pattern>
+
+    <rule ref="Magento2"/>
+</ruleset>
