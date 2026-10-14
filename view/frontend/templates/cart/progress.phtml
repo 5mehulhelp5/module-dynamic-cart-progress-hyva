@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 use MageEnv\DynamicCartProgress\ViewModel\CartProgress;
 
-/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \MageEnv\DynamicCartProgress\Block\Cart\Progress $block */
 /** @var \Magento\Framework\Escaper $escaper */
 
 $viewModel = $block->getData('view_model');
@@ -48,7 +48,7 @@ $labels = [
     )"
     x-show="visible()"
     x-cloak
-    class="mageenv-dcp-cart"
+    class="mageenv-dcp-cart mageenv-dcp-cart--<?= $escaper->escapeHtmlAttr($block->getPositionModifier()) ?>"
     :class="{ 'is-complete': allEarned() }"
     role="group"
     :aria-label="labels.region"
@@ -74,6 +74,7 @@ $labels = [
     </template>
 
     <template x-if="styleKey() === 'step'">
+        <div class="mageenv-dcp-cart__stepbox" :class="stepboxClass()">
         <ol class="mageenv-dcp-cart__steps"
             :class="stepsClass()"
             :style="{ '--dcp-count': milestones().length }"
@@ -85,13 +86,35 @@ $labels = [
                     <span class="mageenv-dcp-cart__step-dot" aria-hidden="true"
                           x-text="stepMark(milestone, index)"></span>
                     <span class="mageenv-dcp-cart__step-text">
-                        <span class="mageenv-dcp-cart__step-reward" x-text="milestone.rewardLabel"></span>
+                        <span class="mageenv-dcp-cart__step-reward" x-text="milestone.rewardLabel"
+                              :title="milestone.rewardLabel"></span>
                         <span class="mageenv-dcp-cart__step-at" x-text="milestone.formattedTargetAmount"></span>
                         <span class="mageenv-dcp-cart__sr" x-text="tierState(milestone, index)"></span>
                     </span>
                 </li>
             </template>
         </ol>
+        <?php // Shown instead of the step labels when the box is too narrow for them. ?>
+        <ol class="mageenv-dcp-cart__legend mageenv-dcp-cart__legend--steps" :aria-label="labels.tiers">
+            <template x-for="row in legend()" :key="row.key">
+                <li class="mageenv-dcp-cart__legend-item" :class="legendClass(row)">
+                    <template x-if="row.more">
+                        <span x-text="row.text"></span>
+                    </template>
+                    <template x-if="!row.more">
+                        <span class="mageenv-dcp-cart__contents">
+                            <span class="mageenv-dcp-cart__legend-reward"
+                                  x-text="row.milestone.rewardLabel"></span>
+                            <span class="mageenv-dcp-cart__legend-at"
+                                  x-text="row.milestone.formattedTargetAmount"></span>
+                            <span class="mageenv-dcp-cart__sr"
+                                  x-text="tierState(row.milestone, row.index)"></span>
+                        </span>
+                    </template>
+                </li>
+            </template>
+        </ol>
+        </div>
     </template>
 
     <template x-if="styleKey() !== 'step'">

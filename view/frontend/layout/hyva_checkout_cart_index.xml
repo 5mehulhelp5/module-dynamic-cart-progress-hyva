@@ -9,22 +9,48 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <!--
-            Same slot as Luma - "checkout.cart.form.before", above the item list,
-            with-items only. The Hyva cart page is server-rendered, so this block
-            server-renders its initial state from the shared ViewModel and then
-            follows the Hyva private-content flow.
+            Same three positions as Luma, one block each; the core block class
+            renders only the one set in "Cart Page Position". The Hyva cart page
+            is server-rendered, so the block server-renders its initial state
+            from the shared ViewModel and then follows the Hyva private-content
+            flow.
 
             Loaded through the "hyva_" handle, which Hyva_Theme adds only when
             the current store view uses a Hyva theme, so Luma store views in the
-            same installation never render this block. The block name still
-            differs from the base module's "mageenv.dcp.cart.progress" so the
-            two can never override each other.
+            same installation never render these blocks. The names differ from
+            the base module's "mageenv.dcp.cart.progress*" so the two can never
+            override each other.
+
+            Hyva prints the "Summary" heading in the cart wrapper template, not
+            as a block, so the top position is simply first in "cart.summary".
         -->
         <referenceContainer name="checkout.cart.form.before">
-            <block name="mageenv.dcp.cart.progress.hyva"
+            <block class="MageEnv\DynamicCartProgress\Block\Cart\Progress"
+                   name="mageenv.dcp.cart.progress.hyva"
                    template="MageEnv_DynamicCartProgressHyva::cart/progress.phtml"
                    before="-">
                 <arguments>
+                    <argument name="position" xsi:type="string">above_items</argument>
+                    <argument name="view_model" xsi:type="object">MageEnv\DynamicCartProgress\ViewModel\CartProgress</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+        <referenceContainer name="cart.summary">
+            <block class="MageEnv\DynamicCartProgress\Block\Cart\Progress"
+                   name="mageenv.dcp.cart.progress.hyva.summary_top"
+                   template="MageEnv_DynamicCartProgressHyva::cart/progress.phtml"
+                   before="-">
+                <arguments>
+                    <argument name="position" xsi:type="string">summary_top</argument>
+                    <argument name="view_model" xsi:type="object">MageEnv\DynamicCartProgress\ViewModel\CartProgress</argument>
+                </arguments>
+            </block>
+            <block class="MageEnv\DynamicCartProgress\Block\Cart\Progress"
+                   name="mageenv.dcp.cart.progress.hyva.summary_below_totals"
+                   template="MageEnv_DynamicCartProgressHyva::cart/progress.phtml"
+                   after="checkout.cart.totals.container">
+                <arguments>
+                    <argument name="position" xsi:type="string">summary_below_totals</argument>
                     <argument name="view_model" xsi:type="object">MageEnv\DynamicCartProgress\ViewModel\CartProgress</argument>
                 </arguments>
             </block>

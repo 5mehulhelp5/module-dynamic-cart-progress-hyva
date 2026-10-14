@@ -104,6 +104,11 @@
     width: 100%;
 }
 
+/* Hyva prints the Order Summary heading right above the first block. */
+.mageenv-dcp-cart--summary-top {
+    margin-top: 1em;
+}
+
 .mageenv-dcp-cart__head {
     align-items: baseline;
     display: flex;
@@ -482,13 +487,24 @@
     color: var(--dcp-accent);
 }
 
-.mageenv-dcp-cart__step-reward {
+/* The text must be a block as wide as its column, or a long reward name
+   overflows into the next step instead of wrapping. */
+.mageenv-dcp-cart__step-text {
     display: block;
-    font-weight: 600;
     max-width: 100%;
+    min-width: 0;
+    padding: 0 .25em;
+}
+
+/* Up to two lines, then an ellipsis; the full name is in the title. */
+.mageenv-dcp-cart__step-reward {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    font-weight: 600;
+    line-clamp: 2;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: break-word;
 }
 
 .mageenv-dcp-cart__step--secured .mageenv-dcp-cart__step-reward {
@@ -510,6 +526,61 @@
 
 .mageenv-dcp-cart__steps--dense .mageenv-dcp-cart__step--next .mageenv-dcp-cart__step-text {
     visibility: visible;
+}
+
+/*
+ * Narrow boxes (Order Summary, phones): when the columns get too slim for a
+ * reward name, the steps keep only their numbered dots and the reward tiers
+ * move into the list underneath, the same list the other styles use. The
+ * thresholds give every step about 4.3em (three steps) to 5em; the step count
+ * comes from the --n3 ... --n6 class (6 = six or more).
+ */
+.mageenv-dcp-cart__stepbox {
+    container-type: inline-size;
+}
+
+.mageenv-dcp-cart__legend--steps {
+    display: none;
+}
+
+@container (max-width: 13em) {
+    .mageenv-dcp-cart__stepbox--n3 .mageenv-dcp-cart__step-text {
+        display: none;
+    }
+
+    .mageenv-dcp-cart__stepbox--n3 .mageenv-dcp-cart__legend--steps {
+        display: flex;
+    }
+}
+
+@container (max-width: 20em) {
+    .mageenv-dcp-cart__stepbox--n4 .mageenv-dcp-cart__step-text {
+        display: none;
+    }
+
+    .mageenv-dcp-cart__stepbox--n4 .mageenv-dcp-cart__legend--steps {
+        display: flex;
+    }
+}
+
+@container (max-width: 25em) {
+    .mageenv-dcp-cart__stepbox--n5 .mageenv-dcp-cart__step-text {
+        display: none;
+    }
+
+    .mageenv-dcp-cart__stepbox--n5 .mageenv-dcp-cart__legend--steps {
+        display: flex;
+    }
+}
+
+@container (max-width: 30em) {
+    .mageenv-dcp-cart__stepbox--n6 .mageenv-dcp-cart__step-text {
+        display: none;
+    }
+
+    .mageenv-dcp-cart__stepbox--n6 .mageenv-dcp-cart__legend--steps {
+        display: flex;
+    }
 }
 
 /* ---------- Mini cart: the premium card, fixed height ---------- */

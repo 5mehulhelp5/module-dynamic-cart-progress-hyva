@@ -278,6 +278,17 @@ window.mageenvDcpCart = function (initialState, labels, sectionName) {
             return {[PREFIX + '__steps--dense']: this.milestones().length > STEPS_DENSE_FROM};
         },
 
+        /**
+         * The step box's count class (--n3 ... --n6, six or more). The CSS uses
+         * it with a container query to swap the step labels for the tier list
+         * when the box is too narrow for that many reward names.
+         */
+        stepboxClass() {
+            const count = Math.min(this.milestones().length, 6);
+
+            return count >= 3 ? {[PREFIX + '__stepbox--n' + count]: true} : {};
+        },
+
         stepMark(milestone, index) {
             return milestone.achieved ? '✓' : String(index + 1);
         },

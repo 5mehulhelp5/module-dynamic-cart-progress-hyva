@@ -13,7 +13,7 @@
     },
     "require": {
         "php": "~8.3.0||~8.4.0||~8.5.0",
-        "mageenv/module-dynamic-cart-progress": "^1.0.0",
+        "mageenv/module-dynamic-cart-progress": "^1.0.2",
         "hyva-themes/magento2-theme-module": ">=1.1.0 <2"
     },
     "autoload": {

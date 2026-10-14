@@ -342,6 +342,11 @@ class CartComponentContractTest extends TestCase
             $this->moduleDir() . '/../DynamicCartProgress/view/frontend/web/css/source/_module.less'
         );
         $lumaBody = substr($less, strpos($less, '/* ---------- Shared ---------- */'));
+        // Luma-only rules (the phone page gutter) follow the shared body.
+        $lumaOnly = strpos($lumaBody, '//  Luma only:');
+        if ($lumaOnly !== false) {
+            $lumaBody = substr($lumaBody, 0, $lumaOnly);
+        }
         $lumaBody = substr($lumaBody, 0, strrpos($lumaBody, '}'));
         $lumaBody = preg_replace('/~"([^"]*)"/', '$1', $lumaBody);
 
@@ -380,7 +385,7 @@ class CartComponentContractTest extends TestCase
         $template = $this->template();
 
         $rootOpen = strpos($template, '<div');
-        $rootClassPos = strpos($template, 'class="mageenv-dcp-cart"');
+        $rootClassPos = strpos($template, 'class="mageenv-dcp-cart mageenv-dcp-cart--');
         self::assertNotFalse($rootOpen);
         self::assertNotFalse($rootClassPos);
 

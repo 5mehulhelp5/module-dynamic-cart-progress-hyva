@@ -2,7 +2,7 @@
 
 Composer package: `mageenv/module-dynamic-cart-progress-hyva`
 Magento module: `MageEnv_DynamicCartProgressHyva`
-Version: 1.0.0
+Version: 1.0.2
 
 ## Purpose
 
@@ -21,7 +21,7 @@ Alpine.js and consumes the same `mageenv-dcp-progress` `customer-data` section
 
 | | |
 |---|---|
-| Business core (required) | `mageenv/module-dynamic-cart-progress` `^1.0.0` |
+| Business core (required) | `mageenv/module-dynamic-cart-progress` `^1.0.2` |
 | This module | Hyvä-only presentation layer for that core |
 
 Install this module **in addition to** the core module on any installation with
@@ -35,7 +35,7 @@ Hyvä store views. A Luma-only store needs the core module alone.
 |---|---|
 | Magento Open Source | 2.4.8 – 2.4.9 |
 | PHP | 8.3, 8.4, 8.5 |
-| `mageenv/module-dynamic-cart-progress` | ^1.0.0 |
+| `mageenv/module-dynamic-cart-progress` | ^1.0.2 |
 | `hyva-themes/magento2-theme-module` | >=1.1.0 <2 |
 
 Composer constraints: `php: ~8.3.0||~8.4.0||~8.5.0`.
@@ -73,8 +73,13 @@ For local development the module lives in
   drawer, in the `cart-drawer.items.before` container (under the drawer
   heading, above the item list).
 * `view/frontend/layout/hyva_checkout_cart_index.xml` adds an Alpine island to the
-  Cart Page in the `checkout.cart.form.before` container (above the item list),
-  the same slot the Luma component uses. No cart template is overridden.
+  Cart Page at the core module's **Cart Page Position** (Stores > Configuration >
+  MageEnv > Dynamic Cart Progress > Display): above the item list
+  (`checkout.cart.form.before`, default), at the top of the Order Summary, or
+  in the Order Summary below the totals (`cart.summary`). One block per
+  position (`mageenv.dcp.cart.progress.hyva`, `...hyva.summary_top`,
+  `...hyva.summary_below_totals`), the same slots the Luma component uses; only
+  the configured one renders. No cart template is overridden.
 * Both templates receive the shared `ViewModel\CartProgress` as a block argument,
   server-render the initial payload (HTML-attribute escaped) into `x-data`, then
   keep it current from the `mageenv-dcp-progress` section on
@@ -111,6 +116,18 @@ with the page. Verified in the Hyvä default theme on Magento 2.4.9 (Mini Cart a
 Cart Page). On a customised Hyvä theme without this container, add
 `<?= $block->getChildHtml('mageenv.dcp.minicart.progress') ?>` to the theme's
 cart drawer template above the item list.
+
+## Changelog
+
+### 1.0.2
+
+* Supports the core module's new Cart Page Position setting (needs core 1.0.2).
+* Step Indicator: long reward names wrap instead of running into the next
+  step; narrow boxes show numbered steps with the reward list underneath.
+
+### 1.0.0
+
+* First release.
 
 ## License
 
