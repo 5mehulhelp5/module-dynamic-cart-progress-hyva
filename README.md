@@ -4,6 +4,9 @@ Composer package: `mageenv/module-dynamic-cart-progress-hyva`
 Magento module: `MageEnv_DynamicCartProgressHyva`
 Version: 1.0.2
 
+Product page, screenshots and user guide:
+[mageenv.com/extensions/dynamic-cart-progress](https://mageenv.com/extensions/dynamic-cart-progress/)
+
 ## Purpose
 
 Hyvä storefront rendering for **MageEnv Dynamic Cart Progress**. It provides
